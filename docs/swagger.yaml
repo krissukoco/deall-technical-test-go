@@ -1,0 +1,268 @@
+basePath: /api/v1
+definitions:
+  auth.loginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  auth.loginResponse:
+    properties:
+      token:
+        type: string
+    type: object
+  auth.registerRequest:
+    properties:
+      birthdate:
+        type: string
+      email:
+        type: string
+      gender:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  match.MatchData:
+    properties:
+      created_at:
+        type: integer
+      id:
+        type: integer
+      images:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      profile_picture:
+        type: string
+      user_id:
+        type: string
+    type: object
+  models.Subscription:
+    properties:
+      created_at:
+        type: integer
+      end_at:
+        type: integer
+      id:
+        type: integer
+      start_at:
+        type: integer
+      updated_at:
+        type: integer
+    type: object
+  models.User:
+    properties:
+      birthdate:
+        type: string
+      created_at:
+        type: integer
+      email:
+        type: string
+      gender:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      profile_picture:
+        type: string
+      updated_at:
+        type: integer
+    type: object
+  subscription.subscriptionPackage:
+    properties:
+      price:
+        type: integer
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+info:
+  contact:
+    email: kristianto.sukoco@gmail.com
+    name: Kris Sukoco
+    url: https://github.com/krissukoco
+  description: REST API for Dating App - Deall Technical Test - Written in Go
+  title: Dating App REST API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with Email and Password
+      parameters:
+      - description: Login Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/auth.loginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.loginResponse'
+      summary: Login
+      tags:
+      - Auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: User Registration
+      parameters:
+      - description: Register Request
+        in: body
+        name: req
+        required: true
+        schema:
+          $ref: '#/definitions/auth.registerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+      summary: Register
+      tags:
+      - Auth
+  /matches/like/{id}:
+    post:
+      description: Like a match by id
+      parameters:
+      - description: Match ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/match.MatchData'
+      security:
+      - AccessToken: []
+      summary: Like a match
+      tags:
+      - Match
+  /matches/new:
+    get:
+      description: Automatically consumes 1 match credit for the day
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/match.MatchData'
+      security:
+      - AccessToken: []
+      summary: Get new match
+      tags:
+      - Match
+  /subscriptions:
+    get:
+      description: Get user's current subscription. Returns 404 and code if user doesn't
+        have any
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Subscription'
+      security:
+      - AccessToken: []
+      summary: Get user's subscription
+      tags:
+      - Subscription
+  /subscriptions/buy/{type}:
+    post:
+      parameters:
+      - description: Subscription type
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Subscription'
+            type: array
+      security:
+      - AccessToken: []
+      summary: Buy a subscription by type
+      tags:
+      - Subscription
+  /subscriptions/packages:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/subscription.subscriptionPackage'
+            type: array
+      summary: Get all subscription packages
+      tags:
+      - Subscription
+  /subscriptions/renew/{type}:
+    post:
+      parameters:
+      - description: Subscription type
+        in: path
+        name: type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Subscription'
+      security:
+      - AccessToken: []
+      summary: Renew user's subscription
+      tags:
+      - Subscription
+  /users/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+      security:
+      - AccessToken: []
+      summary: Get user account
+      tags:
+      - User
+securityDefinitions:
+  AccessToken:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

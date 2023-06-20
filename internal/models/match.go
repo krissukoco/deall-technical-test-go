@@ -5,5 +5,5 @@ type Match struct {
 	UserId    string `json:"-"`
 	MatcheeId string `json:"matchee_id"`
 	Liked     bool   `json:"liked"`
-	CreatedAt int64  `gorm:"autoCreateTime:milli"`
+	CreatedAt int64  `gorm:"autoCreateTime:milli" json:"created_at"`
 }

@@ -20,9 +20,9 @@ var (
 )
 
 type subscriptionPackage struct {
-	Type  string
-	Price int64
-	Title string
+	Type  string `json:"type"`
+	Price int64  `json:"price"`
+	Title string `json:"title"`
 }
 
 type Service interface {
@@ -52,8 +52,8 @@ func (s *service) Get(userId string) (*models.Subscription, error) {
 
 func (s *service) Packages() []*subscriptionPackage {
 	return []*subscriptionPackage{
-		{"monthly", 100000, "One Month Subscription"},
-		{"yearly", 1000000, "One Year Subscription"},
+		{"monthly", 100000, "One Month Subscription for Unlimited Swipes"},
+		{"yearly", 1000000, "One Year Subscription for Unlimited Swipes"},
 	}
 }
 

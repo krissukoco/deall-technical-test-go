@@ -19,11 +19,22 @@ func NewController(service Service) *controller {
 }
 
 func (ctl *controller) RegisterHandlers(group *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
-	group.GET("/new", authMiddleware, ctl.newMatch)
-	group.POST("/like/:id", authMiddleware, ctl.likeMatch)
-	// group.GET("/:id", ctl.GetById)
+
+	// Private routes
+	group.Use(authMiddleware)
+	group.GET("/new", ctl.newMatch)
+	group.POST("/like/:id", ctl.likeMatch)
 }
 
+// newMatch godoc
+// @Summary Get new match
+// @Schemes
+// @Security AccessToken
+// @Description Automatically consumes 1 match credit for the day
+// @Tags Match
+// @Produce json
+// @Success 200 {object} MatchData
+// @Router /matches/new [get]
 func (ctl *controller) newMatch(c *gin.Context) {
 	data, err := ctl.service.GenerateMatch(c.GetString("userId"))
 	if err != nil {
@@ -45,6 +56,16 @@ func (ctl *controller) newMatch(c *gin.Context) {
 	c.JSON(200, data)
 }
 
+// likeMatch godoc
+// @Summary Like a match
+// @Schemes
+// @Security AccessToken
+// @Description Like a match by id
+// @Param id path int true "Match ID"
+// @Tags Match
+// @Produce json
+// @Success 200 {object} MatchData
+// @Router /matches/like/{id} [post]
 func (ctl *controller) likeMatch(c *gin.Context) {
 	userId := c.GetString("userId")
 	matchIdParam := c.Param("id")

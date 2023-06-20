@@ -30,6 +30,10 @@ type loginRequest struct {
 	Password string `json:"password"`
 }
 
+type loginResponse struct {
+	Token string `json:"token"`
+}
+
 type registerRequest struct {
 	Email     string `json:"email"`
 	Password  string `json:"password"`
@@ -38,6 +42,16 @@ type registerRequest struct {
 	Birthdate string `json:"birthdate"`
 }
 
+// login godoc
+// @Summary Login
+// @Schemes
+// @Description Login with Email and Password
+// @Param req body loginRequest true "Login Request"
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} loginResponse
+// @Router /auth/login [post]
 func (ctl *controller) login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -49,11 +63,19 @@ func (ctl *controller) login(c *gin.Context) {
 		c.JSON(400, api.InvalidCredentials())
 		return
 	}
-	c.JSON(200, gin.H{
-		"token": token,
-	})
+	c.JSON(200, loginResponse{token})
 }
 
+// register godoc
+// @Summary Register
+// @Schemes
+// @Description User Registration
+// @Param req body registerRequest true "Register Request"
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]bool
+// @Router /auth/register [post]
 func (ctl *controller) register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
