@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -13,6 +14,10 @@ import (
 
 const (
 	DefaultPort = 8080
+)
+
+var (
+	ErrTest = errors.New("test")
 )
 
 func getPort() int {
@@ -60,6 +65,12 @@ func main() {
 	}
 
 	port := getPort()
+
+	e1 := errors.New("e1")
+	e := errors.Join(e1, ErrTest)
+	fmt.Println("err", e)
+	fmt.Println("is", errors.Is(e, e1))
+	fmt.Println(errors.Is(e, ErrTest))
 
 	router.Run(fmt.Sprintf(":%d", port))
 }

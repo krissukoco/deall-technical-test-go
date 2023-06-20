@@ -2,16 +2,23 @@ package user
 
 import (
 	"github.com/krissukoco/deall-technical-test-go/internal/models"
+	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
 type Repository interface {
 	GetById(id string) (*models.User, error)
 	GetByEmail(email string) (*models.User, error)
+	FindByGender(gender string, limit int) ([]*models.User, error)
+	Create(user *models.User) (*models.User, error)
 }
 
 type repository struct {
 	db *gorm.DB
+}
+
+func newUserId() string {
+	return ulid.Make().String()
 }
 
 func NewRepository(db *gorm.DB) Repository {
@@ -38,4 +45,22 @@ func (r *repository) GetByEmail(email string) (*models.User, error) {
 		return nil, err
 	}
 	return &u, nil
+}
+
+func (r *repository) FindByGender(gender string, limit int) ([]*models.User, error) {
+	users := make([]*models.User, 0)
+	err := r.db.Where("gender = ?", gender).Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (r *repository) Create(user *models.User) (*models.User, error) {
+	user.Id = newUserId()
+	err := r.db.Create(user).Error
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

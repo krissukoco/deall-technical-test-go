@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/krissukoco/deall-technical-test-go/internal/user"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -12,6 +13,8 @@ const (
 
 var (
 	ErrEmailAlreadyExists = errors.New("email already exists")
+	ErrCredentialsInvalid = errors.New("credentials invalid")
+	ErrPasswordMinLen     = errors.New("password must be at least 8 characters long")
 )
 
 type Service interface {
@@ -23,6 +26,7 @@ type service struct {
 	jwtSecret       string
 	userService     user.Service
 	expirationHours int
+	saltCost        int
 }
 
 func NewService(jwtSecret string, userService user.Service, jwtExpirationHours ...int) Service {
@@ -34,22 +38,50 @@ func NewService(jwtSecret string, userService user.Service, jwtExpirationHours .
 		jwtSecret:       jwtSecret,
 		userService:     userService,
 		expirationHours: exp,
+		saltCost:        7,
 	}
+}
+
+func (s *service) comparePassword(password string, hashedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+}
+
+func (s *service) hashPassword(password string) (string, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), s.saltCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashedPassword), nil
 }
 
 func (s *service) Login(email, password string) (string, error) {
 	user, err := s.userService.GetByEmail(email)
 	if err != nil {
+		return "", ErrCredentialsInvalid
+	}
+	// Check password
+	if err := s.comparePassword(password, user.Password); err != nil {
+		return "", ErrCredentialsInvalid
+	}
+	// Generate JWT
+	token, err := GenerateToken(user.Id, s.expirationHours, s.jwtSecret)
+	if err != nil {
 		return "", err
 	}
-	return user.Id, nil
+
+	return token, nil
 }
 
 func (s *service) Register(email, password, name, gender, birthdate string) error {
-	_, err := s.userService.GetByEmail(email)
-	if err == nil {
-		return ErrEmailAlreadyExists
+	// Hash password
+	if len(password) < 8 {
+		return ErrPasswordMinLen
 	}
-	_, err = s.userService.Create(email, password, name, gender, birthdate)
+	hashedPassword, err := s.hashPassword(password)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.userService.Create(email, hashedPassword, name, gender, birthdate)
 	return err
 }
