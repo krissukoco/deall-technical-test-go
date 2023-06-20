@@ -25,6 +25,7 @@ type Service interface {
 	GetById(id string) (*models.User, error)
 	GetByEmail(email string) (*models.User, error)
 	FindByGender(gender string, limit int) ([]*models.User, error)
+	FindByGenderExcludeIds(gender string, limit int, excludeIds []string) ([]*models.User, error)
 	Create(email, name, hashedPassword, gender, birthdate string) (*models.User, error)
 }
 
@@ -48,6 +49,10 @@ func (s *service) GetByEmail(email string) (*models.User, error) {
 
 func (s *service) FindByGender(gender string, limit int) ([]*models.User, error) {
 	return s.repo.FindByGender(gender, limit)
+}
+
+func (s *service) FindByGenderExcludeIds(gender string, limit int, excludeIds []string) ([]*models.User, error) {
+	return s.repo.FindByGenderAndExcludeIds(gender, limit, excludeIds)
 }
 
 func (s *service) Create(email, name, hashedPassword, gender, birthdate string) (*models.User, error) {

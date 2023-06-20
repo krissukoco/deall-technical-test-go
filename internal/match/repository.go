@@ -1,15 +1,21 @@
 package match
 
 import (
+	"errors"
 	"time"
 
 	"github.com/krissukoco/deall-technical-test-go/internal/models"
 	"gorm.io/gorm"
 )
 
+var (
+	ErrMatchNotFound = errors.New("match not found")
+)
+
 type Repository interface {
+	Get(id int64) (*models.Match, error)
 	GetLast24Hours(userId string, limit int) ([]*models.Match, error)
-	Create(maleId, femaleId string) (*models.Match, error)
+	Create(userId, matcheeId string) (*models.Match, error)
 	Like(id int64) (*models.Match, error)
 }
 
@@ -23,6 +29,18 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{
 		db: db,
 	}
+}
+
+func (r *repository) Get(id int64) (*models.Match, error) {
+	var m models.Match
+	err := r.db.Where("id = ?", id).Limit(1).First(&m).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrMatchNotFound
+		}
+		return nil, err
+	}
+	return &m, nil
 }
 
 func (r *repository) GetLast24Hours(userId string, limit int) ([]*models.Match, error) {
@@ -57,6 +75,9 @@ func (r *repository) Like(id int64) (*models.Match, error) {
 	var match models.Match
 	err := r.db.Where("id = ?", id).Limit(1).First(&match).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrMatchNotFound
+		}
 		return nil, err
 	}
 

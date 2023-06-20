@@ -1,14 +1,14 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"os"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/krissukoco/deall-technical-test-go/config"
 	"github.com/krissukoco/deall-technical-test-go/internal/auth"
 	"github.com/krissukoco/deall-technical-test-go/internal/database"
+	"github.com/krissukoco/deall-technical-test-go/internal/match"
+	"github.com/krissukoco/deall-technical-test-go/internal/subscription"
 	"github.com/krissukoco/deall-technical-test-go/internal/user"
 )
 
@@ -16,27 +16,25 @@ const (
 	DefaultPort = 8080
 )
 
-var (
-	ErrTest = errors.New("test")
-)
-
-func getPort() int {
-	portStr, exists := os.LookupEnv("PORT")
-	if !exists {
+func getPort(cfgPort int) int {
+	if cfgPort == 0 {
 		return DefaultPort
 	}
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		return DefaultPort
-	}
-	return port
-}
-
-type Server struct {
+	return cfgPort
 }
 
 func main() {
-	db, err := database.NewDefaultPostgresGorm()
+	dbConfig := config.Config.Database
+
+	db, err := database.NewPostgresGorm(
+		dbConfig.Host,
+		dbConfig.Username,
+		dbConfig.Password,
+		dbConfig.DbName,
+		dbConfig.Timezone,
+		dbConfig.Port,
+		dbConfig.EnableSsl,
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -45,15 +43,13 @@ func main() {
 	router.Use(gin.Recovery())
 	v1 := router.Group("/api/v1")
 
-	jwtsecret, exists := os.LookupEnv("JWT_SECRET")
-	if !exists {
-		panic("JWT_SECRET env var is not set")
-	}
+	// Middlewares
+	authMiddleware := auth.Middleware(config.Config.JwtSecret)
 
 	// Services
 	userService := user.NewService(user.NewRepository(db))
-	authService := auth.NewService(jwtsecret, userService)
-	authMiddleware := auth.Middleware(jwtsecret)
+	authService := auth.NewService(config.Config.JwtSecret, userService)
+	subsService := subscription.NewService(subscription.NewRepository(db))
 
 	{
 		authCtl := auth.NewController(authService)
@@ -63,14 +59,16 @@ func main() {
 		userCtl := user.NewController(userService)
 		userCtl.RegisterHandlers(v1.Group("/users"), authMiddleware)
 	}
+	{
+		subsCtl := subscription.NewController(subsService)
+		subsCtl.RegisterHandlers(v1.Group("/subscriptions"), authMiddleware)
+	}
+	{
+		matchCtl := match.NewController(match.NewService(match.NewRepository(db), subsService, userService))
+		matchCtl.RegisterHandlers(v1.Group("/matches"), authMiddleware)
+	}
 
-	port := getPort()
-
-	e1 := errors.New("e1")
-	e := errors.Join(e1, ErrTest)
-	fmt.Println("err", e)
-	fmt.Println("is", errors.Is(e, e1))
-	fmt.Println(errors.Is(e, ErrTest))
+	port := getPort(config.Config.Port)
 
 	router.Run(fmt.Sprintf(":%d", port))
 }

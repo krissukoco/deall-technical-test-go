@@ -33,3 +33,11 @@ func Unknown(msg ...string) *errorResponse {
 	}
 	return NewError(CodeUnknown, message)
 }
+
+func Internal(msg ...string) *errorResponse {
+	message := "Internal error"
+	if len(msg) > 0 {
+		message = msg[0]
+	}
+	return NewError(CodeInternal, message)
+}

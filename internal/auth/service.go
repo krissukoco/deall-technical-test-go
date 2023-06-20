@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"log"
 
 	"github.com/krissukoco/deall-technical-test-go/internal/user"
 	"golang.org/x/crypto/bcrypt"
@@ -43,6 +44,7 @@ func NewService(jwtSecret string, userService user.Service, jwtExpirationHours .
 }
 
 func (s *service) comparePassword(password string, hashedPassword string) error {
+	log.Println("password:", password, "hashed: ", hashedPassword)
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
@@ -61,6 +63,7 @@ func (s *service) Login(email, password string) (string, error) {
 	}
 	// Check password
 	if err := s.comparePassword(password, user.Password); err != nil {
+		log.Println("compare password error:", err)
 		return "", ErrCredentialsInvalid
 	}
 	// Generate JWT
@@ -82,6 +85,6 @@ func (s *service) Register(email, password, name, gender, birthdate string) erro
 		return err
 	}
 
-	_, err = s.userService.Create(email, hashedPassword, name, gender, birthdate)
+	_, err = s.userService.Create(email, name, hashedPassword, gender, birthdate)
 	return err
 }

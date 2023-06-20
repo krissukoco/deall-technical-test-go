@@ -1,0 +1,12 @@
+# Config File for Viper
+
+database:
+  host: localhost
+  username: postgres
+  password: postgres
+  port: 5432
+  dbname: deall_technical_test_go
+  timezone: Asia/Jakarta
+  enable_ssl: false
+jwt_secret: mysecret-is-kept-safely
+port: 8080

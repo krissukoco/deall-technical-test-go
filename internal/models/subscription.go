@@ -5,12 +5,12 @@ import (
 )
 
 type Subscription struct {
-	Id        int64 `gorm:"primaryKey"`
-	UserId    string
-	StartAt   int64
-	EndAt     int64
-	CreatedAt int64 `gorm:"autoCreateTime:milli"`
-	UpdatedAt int64 `gorm:"autoUpdateTime:milli"`
+	Id        int64  `gorm:"primaryKey" json:"id"`
+	UserId    string `json:"-"`
+	StartAt   int64  `json:"start_at"`
+	EndAt     int64  `json:"end_at"`
+	CreatedAt int64  `gorm:"autoCreateTime:milli" json:"created_at"`
+	UpdatedAt int64  `gorm:"autoUpdateTime:milli" json:"updated_at"`
 }
 
 func (s *Subscription) Renew(add int64) {
@@ -23,5 +23,8 @@ func (s *Subscription) Renew(add int64) {
 }
 
 func (s *Subscription) IsActive() bool {
+	if s == nil {
+		return false
+	}
 	return s.EndAt > s.StartAt
 }

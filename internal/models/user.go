@@ -3,15 +3,15 @@ package models
 import "time"
 
 type User struct {
-	Id             string `gorm:"primaryKey"`
-	Email          string `gorm:"unique"`
+	Id             string `gorm:"primaryKey" json:"id"`
+	Email          string `gorm:"unique" json:"email"`
 	Password       string `json:"-"`
-	Name           string
-	Gender         string
-	Birthdate      string
-	ProfilePicture string
-	CreatedAt      int64 `gorm:"autoCreateTime:milli"`
-	UpdatedAt      int64 `gorm:"autoUpdateTime:milli"`
+	Name           string `json:"name"`
+	Gender         string `json:"gender"`
+	Birthdate      string `json:"birthdate"`
+	ProfilePicture string `json:"profile_picture"`
+	CreatedAt      int64  `gorm:"autoCreateTime:milli" json:"created_at"`
+	UpdatedAt      int64  `gorm:"autoUpdateTime:milli" json:"updated_at"`
 }
 
 func (u *User) GetAge() int {

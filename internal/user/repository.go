@@ -1,6 +1,8 @@
 package user
 
 import (
+	"log"
+
 	"github.com/krissukoco/deall-technical-test-go/internal/models"
 	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
@@ -10,6 +12,7 @@ type Repository interface {
 	GetById(id string) (*models.User, error)
 	GetByEmail(email string) (*models.User, error)
 	FindByGender(gender string, limit int) ([]*models.User, error)
+	FindByGenderAndExcludeIds(gender string, limit int, excludeIds []string) ([]*models.User, error)
 	Create(user *models.User) (*models.User, error)
 }
 
@@ -49,10 +52,26 @@ func (r *repository) GetByEmail(email string) (*models.User, error) {
 
 func (r *repository) FindByGender(gender string, limit int) ([]*models.User, error) {
 	users := make([]*models.User, 0)
-	err := r.db.Where("gender = ?", gender).Find(&users).Error
+	err := r.db.Where("gender = ?", gender).
+		Limit(limit).
+		Find(&users).
+		Error
 	if err != nil {
 		return nil, err
 	}
+	return users, nil
+}
+
+func (r *repository) FindByGenderAndExcludeIds(gender string, limit int, excludeIds []string) ([]*models.User, error) {
+	users := make([]*models.User, 0)
+	err := r.db.Where("gender = ?", gender).
+		Not(excludeIds).
+		Limit(limit).
+		Find(&users).Error
+	if err != nil {
+		return nil, err
+	}
+	log.Println()
 	return users, nil
 }
 
