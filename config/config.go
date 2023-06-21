@@ -17,9 +17,10 @@ type dbConfig struct {
 }
 
 type config struct {
-	Database  *dbConfig `yaml:"database"`
-	Port      int       `yaml:"port"`
-	JwtSecret string    `yaml:"jwt_secret"`
+	Database        *dbConfig `yaml:"database"`
+	Port            int       `yaml:"port"`
+	JwtSecret       string    `yaml:"jwt_secret"`
+	SwaggerBasePath string    `yaml:"swagger_base_path"`
 }
 
 func Load(file string) (*config, error) {

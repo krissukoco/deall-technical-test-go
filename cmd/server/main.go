@@ -74,7 +74,8 @@ func main() {
 	v1 := router.Group("/api/v1")
 
 	// Swagger Documentation
-	docs.SwaggerInfo.BasePath = "/api/v1"
+	swaggerBasePath := cfg.SwaggerBasePath + "/api/v1"
+	docs.SwaggerInfo.BasePath = swaggerBasePath
 	v1.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Middlewares

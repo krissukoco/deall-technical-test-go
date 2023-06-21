@@ -8,5 +8,6 @@ database:
   dbname: deall_technical_test_go
   timezone: Asia/Jakarta
   enable_ssl: false
+  swagger_base_path: /dating-app-deall/api/v1
 jwt_secret: mysecret-is-kept-safely
 port: 8080
