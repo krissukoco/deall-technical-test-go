@@ -39,7 +39,7 @@ jobs:
         run: go test ./...
 
   deploy:
-    depends: test
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
