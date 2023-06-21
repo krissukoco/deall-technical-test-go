@@ -5,7 +5,7 @@ database:
   username: postgres
   password: postgres
   port: 5432
-  dbname: test
+  db_name: test
   timezone: Asia/Jakarta
   enable_ssl: false
 jwt_secret: secret
