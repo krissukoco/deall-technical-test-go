@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -40,4 +41,17 @@ func Middleware(secret string) gin.HandlerFunc {
 		c.Set("userId", userId)
 		c.Next()
 	}
+}
+
+func MockAuthMiddlewareWithUserId(userId string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("userId", userId)
+		c.Next()
+	}
+}
+
+func MockHeaderWithAuth(secret, userId string) http.Header {
+	h := http.Header{}
+	h.Set("Authorization", "Bearer "+MockToken(secret, userId))
+	return h
 }

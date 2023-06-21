@@ -10,6 +10,7 @@ import (
 
 type Repository interface {
 	Get(userId string) (*models.Subscription, error)
+	GetById(id int64) (*models.Subscription, error)
 	Renew(userId string, add int64) (*models.Subscription, error)
 	Create(userId string, add int64) (*models.Subscription, error)
 }
@@ -29,6 +30,18 @@ func NewRepository(db *gorm.DB) Repository {
 func (r *repository) Get(userId string) (*models.Subscription, error) {
 	var sub models.Subscription
 	err := r.db.Where("user_id = ?", userId).Limit(1).First(&sub).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrNoSubscription
+		}
+		return nil, err
+	}
+	return &sub, nil
+}
+
+func (r *repository) GetById(id int64) (*models.Subscription, error) {
+	var sub models.Subscription
+	err := r.db.Where("id = ?", id).Limit(1).First(&sub).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrNoSubscription
@@ -58,10 +71,16 @@ func (r *repository) Renew(userId string, add int64) (*models.Subscription, erro
 	err := r.db.Where("user_id = ?", userId).Limit(1).First(&sub).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return r.Create(userId, add)
+			sub, err := r.Create(userId, add)
+			if err != nil {
+				return nil, err
+			}
+			sub.Renew(add)
+			return sub, nil
 		}
 		return nil, err
 	}
+	sub.Renew(add)
 
 	err = r.db.Save(&sub).Error
 	if err != nil {

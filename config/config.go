@@ -1,7 +1,7 @@
 package config
 
 import (
-	"os"
+	"runtime"
 
 	"github.com/spf13/viper"
 )
@@ -22,25 +22,21 @@ type config struct {
 	JwtSecret string    `yaml:"jwt_secret"`
 }
 
-var Config *config
-
-func init() {
-	env := os.Getenv("ENV")
-	if env == "" {
-		env = "local"
-	}
-	viper.SetConfigName(env)
+func Load(file string) (*config, error) {
+	_, filename, _, _ := runtime.Caller(0)
+	viper.SetConfigName(file)
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./config")
+	viper.AddConfigPath(filename + "/../../config")
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	Config = &config{}
-	err = viper.Unmarshal(Config)
+	cfg := &config{}
+	err = viper.Unmarshal(cfg)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
+	return cfg, nil
 }

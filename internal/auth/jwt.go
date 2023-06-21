@@ -42,3 +42,8 @@ func ParseToken(tokenString string, secret string) (*jwt.MapClaims, error) {
 	}
 	return &claims, nil
 }
+
+func MockToken(secret, userId string) string {
+	token, _ := GenerateToken(userId, 24, secret)
+	return token
+}

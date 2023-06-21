@@ -15,8 +15,10 @@ type Subscription struct {
 
 func (s *Subscription) Renew(add int64) {
 	now := time.Now().UnixMilli()
-	if s.EndAt < now {
+	if s.StartAt == 0 {
 		s.StartAt = now
+	}
+	if s.EndAt < now {
 		s.EndAt = now
 	}
 	s.EndAt += add
@@ -26,5 +28,5 @@ func (s *Subscription) IsActive() bool {
 	if s == nil {
 		return false
 	}
-	return s.EndAt > s.StartAt
+	return s.EndAt > time.Now().UnixMilli()
 }

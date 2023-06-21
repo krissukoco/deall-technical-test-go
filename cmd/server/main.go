@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/krissukoco/deall-technical-test-go/config"
@@ -43,7 +44,17 @@ func getPort(cfgPort int) int {
 // @name Authorization
 
 func main() {
-	dbConfig := config.Config.Database
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "local"
+	}
+
+	cfg, err := config.Load(env)
+	if err != nil {
+		panic(err)
+	}
+
+	dbConfig := cfg.Database
 
 	db, err := database.NewPostgresGorm(
 		dbConfig.Host,
@@ -67,11 +78,11 @@ func main() {
 	v1.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Middlewares
-	authMiddleware := auth.Middleware(config.Config.JwtSecret)
+	authMiddleware := auth.Middleware(cfg.JwtSecret)
 
 	// Services
 	userService := user.NewService(user.NewRepository(db))
-	authService := auth.NewService(config.Config.JwtSecret, userService)
+	authService := auth.NewService(cfg.JwtSecret, userService)
 	subsService := subscription.NewService(subscription.NewRepository(db))
 
 	{
@@ -92,7 +103,7 @@ func main() {
 		matchCtl.RegisterHandlers(v1.Group("/matches"), authMiddleware)
 	}
 
-	port := getPort(config.Config.Port)
+	port := getPort(cfg.Port)
 
 	router.Run(fmt.Sprintf(":%d", port))
 }
