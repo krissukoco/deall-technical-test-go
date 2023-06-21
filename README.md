@@ -3,6 +3,10 @@
 ### As a requirement for technical test completion on Deall. Written in Go/Golang.
 <br/>
 
+## See the app in action
+- [API Documentation](https://api.krissukoco.dev/dating-app-deall/api/v1/docs/index.html)
+- [API Endpoint](https://api.krissukoco.dev/dating-app-deall/api/v1)
+
 ## How the code is structured
 1. Entrypoint of the server is on `cmd` directory: `cmd/server/main.go`
 2. `config` directory contains configuration files for the server. On `config.go` file, you can find the configuration for the server, database, and the JWT secret key, using `viper` to Unmarshal yaml files.
