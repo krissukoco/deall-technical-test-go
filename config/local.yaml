@@ -1,7 +1,7 @@
 # Config File for Viper
 
 database:
-  host: localhost
+  host: postgres
   username: postgres
   password: postgres
   port: 5432
