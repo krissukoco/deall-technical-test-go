@@ -54,8 +54,12 @@ jobs:
             echo "Pulling from main branch"
             git checkout main
             git pull
-            docker compose -f docker-compose-local.yaml down
-            docker compose -f docker-compose-local.yaml up -d
+
+            echo "Copying config file"
+            echo "${{ secrets.PROD_CONFIG }}" > config/prod.yaml
+
+            docker compose -f docker-compose-prod.yaml down
+            docker compose -f docker-compose-prod.yaml up -d --build
             echo "Deployed to VM"
             
 
