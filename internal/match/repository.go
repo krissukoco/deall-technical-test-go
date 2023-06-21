@@ -89,3 +89,54 @@ func (r *repository) Like(id int64) (*models.Match, error) {
 
 	return &match, nil
 }
+
+type mockRepository struct {
+	items []*models.Match
+}
+
+func NewMockRepository(items []*models.Match) Repository {
+	return &mockRepository{items}
+}
+
+func (r *mockRepository) Get(id int64) (*models.Match, error) {
+	for _, item := range r.items {
+		if item.Id == id {
+			return item, nil
+		}
+	}
+	return nil, ErrMatchNotFound
+}
+
+func (r *mockRepository) GetLast24Hours(userId string, limit int) ([]*models.Match, error) {
+	now := time.Now()
+	ts := now.Add(-24 * time.Hour).UnixMilli()
+	items := make([]*models.Match, 0)
+	for _, item := range r.items {
+		if item.UserId == userId && item.CreatedAt > ts {
+			items = append(items, item)
+		}
+	}
+	return items, nil
+}
+
+func (r *mockRepository) Create(userId, matcheeId string) (*models.Match, error) {
+	match := &models.Match{
+		Id:        int64(len(r.items) + 1),
+		UserId:    userId,
+		MatcheeId: matcheeId,
+		Liked:     false,
+		CreatedAt: time.Now().UnixMilli(),
+	}
+	r.items = append(r.items, match)
+	return match, nil
+}
+
+func (r *mockRepository) Like(id int64) (*models.Match, error) {
+	for _, item := range r.items {
+		if item.Id == id {
+			item.Liked = true
+			return item, nil
+		}
+	}
+	return nil, ErrMatchNotFound
+}

@@ -2,10 +2,9 @@ package auth
 
 import (
 	"errors"
-	"log"
 
 	"github.com/krissukoco/deall-technical-test-go/internal/user"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/krissukoco/deall-technical-test-go/pkg/utils"
 )
 
 const (
@@ -43,27 +42,14 @@ func NewService(jwtSecret string, userService user.Service, jwtExpirationHours .
 	}
 }
 
-func (s *service) comparePassword(password string, hashedPassword string) error {
-	log.Println("password:", password, "hashed: ", hashedPassword)
-	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-}
-
-func (s *service) hashPassword(password string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), s.saltCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hashedPassword), nil
-}
-
 func (s *service) Login(email, password string) (string, error) {
 	user, err := s.userService.GetByEmail(email)
 	if err != nil {
 		return "", ErrCredentialsInvalid
 	}
 	// Check password
-	if err := s.comparePassword(password, user.Password); err != nil {
-		log.Println("compare password error:", err)
+	if err := utils.ComparePassword(password, user.Password); err != nil {
+		// log.Println("compare password error:", err)
 		return "", ErrCredentialsInvalid
 	}
 	// Generate JWT
@@ -80,11 +66,53 @@ func (s *service) Register(email, password, name, gender, birthdate string) erro
 	if len(password) < 8 {
 		return ErrPasswordMinLen
 	}
-	hashedPassword, err := s.hashPassword(password)
+	hashedPassword, err := utils.HashPassword(password)
 	if err != nil {
 		return err
 	}
 
 	_, err = s.userService.Create(email, name, hashedPassword, gender, birthdate)
+	return err
+}
+
+type mockService struct {
+	userService user.Service
+	jwtSecret   string
+}
+
+func NewMockService(userService user.Service, jwtSecret string) Service {
+	return &mockService{userService, jwtSecret}
+}
+
+func (m *mockService) Login(email, password string) (string, error) {
+	user, err := m.userService.GetByEmail(email)
+	if err != nil {
+		return "", ErrCredentialsInvalid
+	}
+	// Check password
+	if err := utils.ComparePassword(password, user.Password); err != nil {
+		// log.Println("compare password error:", err)
+		return "", ErrCredentialsInvalid
+	}
+	// Generate JWT
+	token, err := GenerateToken(user.Id, 24, m.jwtSecret)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+func (m *mockService) Register(email, password, name, gender, birthdate string) error {
+	// Hash password
+	if len(password) < 8 {
+		return ErrPasswordMinLen
+	}
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		return err
+	}
+
+	_, err = m.userService.Create(email, name, hashedPassword, gender, birthdate)
 	return err
 }

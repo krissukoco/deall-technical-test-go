@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func postgresTestDsn() (string, error) {
+func postgresTestDsn(dbname string) (string, error) {
 	cfg, err := config.Load("test")
 	if err != nil {
 		return "", err
@@ -17,8 +17,8 @@ func postgresTestDsn() (string, error) {
 	return fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", dbc.Host, dbc.Port, dbc.Username, dbc.Password, dbc.DbName), nil
 }
 
-func NewTestDb() (*gorm.DB, error) {
-	dsn, err := postgresTestDsn()
+func NewTestDb(dbname string) (*gorm.DB, error) {
+	dsn, err := postgresTestDsn(dbname)
 	if err != nil {
 		return nil, err
 	}

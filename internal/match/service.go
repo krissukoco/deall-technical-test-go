@@ -2,7 +2,6 @@ package match
 
 import (
 	"errors"
-	"log"
 	"math/rand"
 
 	"github.com/krissukoco/deall-technical-test-go/internal/models"
@@ -91,7 +90,7 @@ func (s *service) GenerateMatch(userId string) (*MatchData, error) {
 	}
 
 	// Generate match
-	log.Printf("gender: %s, limit: %d, matches today: %v", gender, 10, todayMatches)
+	// log.Printf("gender: %s, limit: %d, matches today: %v", gender, 10, todayMatches)
 	availableUsers, err := s.userService.FindByGenderExcludeIds(gender, 10, todayMatches)
 	if err != nil {
 		return nil, err

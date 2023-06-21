@@ -15,7 +15,7 @@ func TestApi(t *testing.T) {
 	t.Log("TestApi")
 	router := gin.Default()
 	userId := "user1"
-	ctl := NewController(NewService(newMockRepository([]*models.Subscription{
+	ctl := NewController(NewService(NewMockRepository([]*models.Subscription{
 		{1, userId, tests.Now(), tests.Now(), tests.Now(), tests.Now()},
 	})))
 

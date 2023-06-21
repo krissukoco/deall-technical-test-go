@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/krissukoco/deall-technical-test-go/internal/models"
+	"github.com/krissukoco/deall-technical-test-go/tests"
 	"gorm.io/gorm"
 )
 
@@ -88,4 +89,54 @@ func (r *repository) Renew(userId string, add int64) (*models.Subscription, erro
 	}
 
 	return &sub, nil
+}
+
+type mockRepository struct {
+	items []*models.Subscription
+}
+
+func NewMockRepository(items []*models.Subscription) Repository {
+	return &mockRepository{
+		items: items,
+	}
+}
+
+func (m *mockRepository) Get(userId string) (*models.Subscription, error) {
+	for _, item := range m.items {
+		if item.UserId == userId {
+			return item, nil
+		}
+	}
+	return nil, ErrNoSubscription
+}
+
+func (m *mockRepository) GetById(id int64) (*models.Subscription, error) {
+	for _, item := range m.items {
+		if item.Id == id {
+			return item, nil
+		}
+	}
+	return nil, ErrNoSubscription
+}
+
+func (m *mockRepository) Renew(userId string, add int64) (*models.Subscription, error) {
+	for _, item := range m.items {
+		if item.UserId == userId {
+			item.EndAt += add
+			return item, nil
+		}
+	}
+	return nil, ErrNoSubscription
+}
+
+func (m *mockRepository) Create(userId string, add int64) (*models.Subscription, error) {
+	start := tests.Now()
+	end := start + add
+	item := &models.Subscription{
+		UserId:  userId,
+		StartAt: start,
+		EndAt:   end,
+	}
+	m.items = append(m.items, item)
+	return item, nil
 }

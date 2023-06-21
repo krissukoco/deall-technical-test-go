@@ -9,7 +9,7 @@ import (
 
 func TestRepository(t *testing.T) {
 	// Get database
-	db, err := tests.NewTestDb()
+	db, err := tests.NewTestDb("test")
 	if err != nil {
 		t.Errorf("Error creating test db: %s", err.Error())
 		return

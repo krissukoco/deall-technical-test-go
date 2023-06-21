@@ -11,7 +11,7 @@ import (
 
 func TestService_Crud(t *testing.T) {
 	t.Log("TestService_Crud")
-	repo := newMockRepository(getMockItems())
+	repo := NewMockRepository(getMockItems())
 	service := NewService(repo)
 	assert.NotNil(t, service)
 
@@ -61,54 +61,4 @@ func getMockItems() []*models.Subscription {
 		{2, "user2", tests.Now(), tests.Now(), tests.Now(), tests.Now()},
 		{3, "user3", tests.Now(), tests.Now(), tests.Now(), tests.Now()},
 	}
-}
-
-type mockRepository struct {
-	items []*models.Subscription
-}
-
-func newMockRepository(items []*models.Subscription) Repository {
-	return &mockRepository{
-		items: items,
-	}
-}
-
-func (m *mockRepository) Get(userId string) (*models.Subscription, error) {
-	for _, item := range m.items {
-		if item.UserId == userId {
-			return item, nil
-		}
-	}
-	return nil, ErrNoSubscription
-}
-
-func (m *mockRepository) GetById(id int64) (*models.Subscription, error) {
-	for _, item := range m.items {
-		if item.Id == id {
-			return item, nil
-		}
-	}
-	return nil, ErrNoSubscription
-}
-
-func (m *mockRepository) Renew(userId string, add int64) (*models.Subscription, error) {
-	for _, item := range m.items {
-		if item.UserId == userId {
-			item.EndAt += add
-			return item, nil
-		}
-	}
-	return nil, ErrNoSubscription
-}
-
-func (m *mockRepository) Create(userId string, add int64) (*models.Subscription, error) {
-	start := tests.Now()
-	end := start + add
-	item := &models.Subscription{
-		UserId:  userId,
-		StartAt: start,
-		EndAt:   end,
-	}
-	m.items = append(m.items, item)
-	return item, nil
 }
