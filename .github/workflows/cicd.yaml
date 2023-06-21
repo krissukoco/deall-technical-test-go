@@ -2,17 +2,15 @@ name: Test and Deploy to VM
 on:
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
 env:
   ENV: dev
   HOST: ${{ secrets.HOST }}
   USERNAME: ${{ secrets.USERNAME }}
   KEY: ${{ secrets.SSH_KEY }}
-  DIR_NAME: ${{ secrets.DEV_DIR_NAME }}
-  CONTAINER_NAME: ${{ secrets.DEV_CONTAINER_NAME }}
-  IMAGE_NAME: ${{ secrets.DEV_IMAGE_NAME }}
-  CONTAINER_PORT: ${{ secrets.DEV_CONTAINER_PORT }}
-  LOCAL_PORT: ${{ secrets.DEV_LOCAL_PORT }}
-  DOCKER_NETWORK: ${{ secrets.DEV_DOCKER_NETWORK }}
+  DIR_NAME: ${{ secrets.DIR_NAME }}
+
 jobs:
   test:
     name: Test
